@@ -45,14 +45,14 @@ var BakuRouter = Backbone.Router.extend({
 	 		user.fetch({success: function(delUser){
 			 		delUser.destroy({
 		            success: function () {
-		                
-		                app.navigate('#', true, true);
+		                app.navigate('#', true);
+		                window.location.reload();
 		            }
 		        });
 	            utils.toggleLoader(null);
 	   		}});
     	}
-    	app.navigate('#', true, true);
+    	app.navigate('#', false, true);
     	return false;
     }
 

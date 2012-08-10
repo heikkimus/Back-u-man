@@ -3,6 +3,9 @@
 var mongoose = require('mongoose/');
 passport = require('passport');
 LocalStrategy = require('passport-local').Strategy;
+
+
+console.log(userApi)
 var config = require('./config'); // Local congig file to hide creds
 db = mongoose.connect(config.creds.mongodb);
 //var UserSchema = require('./schema'); 
@@ -13,19 +16,9 @@ var server = app();
 server.set('url', 'http://127.0.0.1:8080');
 //server.use(restify.bodyParser());
 
-
 server.use('/public', app.static(__dirname + '/static'));
 server.use('/css', app.static(__dirname + '/static/css/'));
 server.use(app.bodyParser());
-//server.use('views', __dirname + '/static/' );
-//server.use( app.static( __dirname + '/static/') );
-//server.engine('html', require('jade').__express);
-/*server.engine( 'html', require('handlebars') );
-server.configure(function(){
-    server.set('view engine', 'handlebars');
-    server.set("view options", { layout: false }) 
- 
-});*/
 
 
 var UserSchema = new mongoose.Schema({
@@ -35,8 +28,9 @@ var UserSchema = new mongoose.Schema({
     psw:String,
     img: String
 })
+User = db.model('User', UserSchema);
+var userApi = require('./user')
 
-var User = db.model('User', UserSchema);
 
 /*Authentication*/
 
@@ -137,94 +131,23 @@ function login(req,res,next){
 	passport.authenticate('local', { failureRedirect: '/login', failureFlash: true })
 }
 
-function getUser(req, res, next)
-{
-	console.log(typeof req.params.id)
-	if (typeof req.params.id !== 'undefined')
-	{
-		User.findOne({'_id':req.params.id}, function(err, user){
-		if(err){
-			res.send({error:err});
-		}
-			res.send(user);
-		});
-		
-	}else {
-		User.find('', function(err, users){
-			if(err){
-			res.send({error:err});
-			}
-			res.send(users);
-		});
-	}
-}
-
-function saveUser(req, res, next)
-{
-	console.log("saveUser");
-	if (typeof req.params.id !== 'undefined')
-	{
-		User.findOne({'_id':req.body.id}, function(err, user){
-			if(err){
-				res.send({message: err});
-				//res.send({error:err});
-			}
-			var u = user;
-			saveChangedProperties(req.body, u)
-			u.save();
-			res.send(u);
-		});
-	}else {
-		u = new User();
-		saveChangedProperties(req.body, u)
-		u.save();
-		res.send(u);
-	}
-}
-
-function deleteUser(req,res,next){
-	if (typeof req.params.id !== 'undefined')
-	{
-		User.findOne({'_id':req.params.id}, function(err, user){
-			if(err){
-				res.send({message: err});
-				//res.send({error:err});
-			}
-			var u = user;
-			u.remove();
-			res.send({message: "success"});
-		});
-	}
-}
-
-/**
- * save changed properties from request body to object.
- */
-function saveChangedProperties(props, obj){
-	for (var key in props) {
-	  if (props.hasOwnProperty(key)) {
-	    obj[key] = props[key]
-	  }
-	}
-}
-
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) { return next(); }
   res.redirect('/login')
 }
 
 // Set up our routes and start the server
-server.get('/', root);
-server.get('/login', loginForm);
-server.post('/login', login);
-server.get('/init', initdb);
+server.get('/'      , root);
+server.get('/login' , loginForm);
+server.post('/login',login);
+server.get('/init'  , initdb);
 
-server.get('/api/user', getUser)
-server.get('/api/user/:id', getUser)
-server.post('/api/user', saveUser)
-server.put('/api/user/:id', saveUser)
-server.delete('/api/user/:id', deleteUser)
+server.get('/api/user'    , userApi.getUser)
+server.get('/api/user/:id', userApi.getUser)
+server.post('/api/user'   , userApi.saveUser)
+server.put('/api/user/:id', userApi.saveUser)
+server.delete('/api/user/:id', userApi.deleteUser)
 
-server.listen(8080, function() {
+server.listen(8081, function() {
   console.log('%s listening at %s', server.name, "127.0.0.1:8080");
 });
