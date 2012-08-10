@@ -61,7 +61,27 @@ window.utils = {
         controlGroup.removeClass('error');
         $('.help-inline', controlGroup).html('');
     },
-
+	
+	toggleLoader: function(parent){
+		var loader = $('#loader');
+		if(parent){
+			loader.css( 'top', '10px');
+			loader.css('left', '10px');
+		}
+		else
+		{
+			loader.css( 'top', '10px');
+			loader.css('left', '10px');
+		}
+		console.log(loader.css('display'))
+		if(loader.css('display') === 'none'){
+			loader.show();	
+		}
+		else
+		{
+			loader.hide();
+		}
+	},
     showAlert: function(title, text, klass) {
         $('.alert').removeClass("alert-error alert-warning alert-success alert-info");
         $('.alert').addClass(klass);

@@ -1,12 +1,16 @@
 	<td>
-		<a href="#user/<%= _id %>" class="thumbnail plain">
 	    <!--<img src="" height="150" width="125" alt="">-->
    		 <h5><%= name %></h5>
-   		</a>
     </td>
      <td>
     	<%= email %>
     </td>
     <td>
-    	<i class="icon-globe"></i> <%= psw %></p>
+    	<a href="#user/<%= _id %>" title="edit">
+   		 <i class="icon-edit"></i> </p>
+   		</a>
+    	
+    </td>
+    <td>
+    	<a href="#user/<%= _id %>/delete" title="remove"><i class="icon-remove"></i></a> </p>
     </td>

@@ -38,17 +38,13 @@ window.User = Backbone.Model.extend({
 
         return _.size(messages) > 0 ? {isValid: false, messages: messages} : {isValid: true};
     },
-
+*/
     defaults: {
         id: null,
         name: "",
-        grapes: "",
-        country: "USA",
-        region: "California",
-        year: "",
-        description: "",
-        picture: null
-    }*/
+        email: "",
+		psw:""
+    }
 });
 
 window.UserCollection = Backbone.Collection.extend({

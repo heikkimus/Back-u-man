@@ -3,6 +3,8 @@ var BakuRouter = Backbone.Router.extend({
     routes: {
         ""                  : "list",
         "user/:id"         : "userDetails",
+        "user/new"         : "userDetails",
+        "user/:id/delete"  : "userRemove",
     },
 
     initialize: function () {
@@ -18,50 +20,57 @@ var BakuRouter = Backbone.Router.extend({
        // this.headerView.selectMenuItem('home-menu');
     },
 
-	 userDetails: function (id) {
-        var user = new User({id: id});
-        
-        user.fetch({success: function(){
-        	console.log(user)
-            $("#content").html(new UserView({model: user}).el);
-        }});
+	userDetails: function (id) {
+	 	
+	 	if(id == 'new')
+	 	{
+	 		var user = new User();
+	 		$("#content").html(new UserView({model: user}).el);
+	 	}
+	 	else
+	 	{
+	 		utils.toggleLoader(null);
+	 		var user = new User({id: id});
+	 		user.fetch({success: function(){
+	            $("#content").html(new UserView({model: user}).el);
+	            utils.toggleLoader(null);
+       		}});
+	 	}
     },
-   /* wineDetails: function (id) {
-        var wine = new Wine({id: id});
-        wine.fetch({success: function(){
-            $("#content").html(new WineView({model: wine}).el);
-        }});
-        this.headerView.selectMenuItem();
-    },
-
-	addWine: function() {
-        var wine = new Wine();
-        $('#content').html(new WineView({model: wine}).el);
-        this.headerView.selectMenuItem('add-menu');
-	},
-
-    about: function () {
-        if (!this.aboutView) {
-            this.aboutView = new AboutView();
-        }
-        $('#content').html(this.aboutView.el);
-        this.headerView.selectMenuItem('about-menu');
-    }*/
+    userRemove: function(id){
+    	if ( confirm('Are you sure?') ){
+    		utils.toggleLoader(null);
+	    	var user = new User({id: id});
+	    	
+	 		user.fetch({success: function(delUser){
+			 		delUser.destroy({
+		            success: function () {
+		                
+		                app.navigate('#', true, true);
+		            }
+		        });
+	            utils.toggleLoader(null);
+	   		}});
+    	}
+    	app.navigate('#', true, true);
+    	return false;
+    }
 
 });
 
 
 window.UserListView = Backbone.View.extend({
 	tagName:"table",
-	
+	className:"table table-condensed",
     initialize: function () {
         this.render();
+       
     },
     render: function () {
     	
         var users = this.model.models;
         var len = users.length;
-        $(this.el).html('');
+        $(this.el).html('<a href="#user/new" title="Add new"><i class="icon-plus"></i></a><br/><br/>');
         for (var i = 0; i < len; i++) {
         	var view = new UserListItemView({model: users[i]})
             $(this.el).append(view.render().el);
@@ -73,7 +82,7 @@ window.UserListView = Backbone.View.extend({
 window.UserListItemView = Backbone.View.extend({
 
     tagName: "tr",
-    className: "span3",
+    className: "",
 
     initialize: function () {
         this.model.bind("change", this.render, this);
@@ -93,13 +102,12 @@ window.UserView = Backbone.View.extend({
     },
 
     render: function () {
-    	console.log(this.model.toJSON());
         $(this.el).html(this.template(this.model.toJSON()));
         return this;
     },
     events: {
-       //"change"        : "change",
-       // "click .save"   : "beforeSave",
+       "change"        : "change",
+       "click .save"   : "beforeSave",
        // "click .delete" : "deleteWine",
        // "drop #picture" : "dropHandler"
     },
@@ -115,45 +123,49 @@ window.UserView = Backbone.View.extend({
         this.model.set(change);
 
         // Run validation rule (if any) on changed item
-        var check = this.model.validateItem(target.id);
+        /*var check = this.model.validateItem(target.id);
         if (check.isValid === false) {
             utils.addValidationError(target.id, check.message);
         } else {
             utils.removeValidationError(target.id);
-        }
+        }*/
     },
 
     beforeSave: function () {
         var self = this;
-        var check = this.model.validateAll();
-        if (check.isValid === false) {
+        //var check = this.model.validateAll();
+        /*if (check.isValid === false) {
             utils.displayValidationErrors(check.messages);
             return false;
-        }
+        }*/
         // Upload picture file if a new file was dropped in the drop area
-        if (this.pictureFile) {
+       /* if (this.pictureFile) {
             this.model.set("picture", this.pictureFile.name);
             utils.uploadFile(this.pictureFile,
                 function () {
                     self.saveWine();
                 }
             );
-        } else {
-            this.saveWine();
-        }
+        } else {*/
+        this.saveUser();
+        //}
         return false;
     },
 
     saveUser: function () {
+    	utils.toggleLoader(null);
         var self = this;
         this.model.save(null, {
             success: function (model) {
-                self.render();
-                app.navigate('wines/' + model.id, false);
-                utils.showAlert('Success!', 'Wine saved successfully', 'alert-success');
+                //self.render();
+                console.log(model.toJSON());
+                app.navigate('user/' + model.toJSON()._id, false, true);
+                utils.toggleLoader(null);
+                //utils.showAlert('Success!', 'Wine saved successfully', 'alert-success');
             },
             error: function () {
-                utils.showAlert('Error', 'An error occurred while trying to delete this item', 'alert-error');
+            	utils.toggleLoader(null);
+                //utils.showAlert('Error', 'An error occurred while trying to delete this item', 'alert-error');
             }
         });
     },
