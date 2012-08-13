@@ -158,9 +158,8 @@ window.UserView = Backbone.View.extend({
         this.model.save(null, {
             success: function (model) {
                 //self.render();
-                console.log(model.toJSON());
-                app.navigate('user/' + model.toJSON()._id, false, true);
                 utils.toggleLoader(null);
+                app.navigate('user/' + model.toJSON()._id, false, true);
                 //utils.showAlert('Success!', 'Wine saved successfully', 'alert-success');
             },
             error: function () {
