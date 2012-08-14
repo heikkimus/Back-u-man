@@ -17,7 +17,12 @@ function saveChangedProperties(props, obj, fnDone){
 module.exports = {
 	
 	login : function (req,res,next) {
+		console.log(passport)
 	    passport.authenticate('local', function(err,user,info) {
+	    	    console.log(info)
+	    	    if(err){
+	    	    	console.log(err)
+	    	    }
 	            if(!user){
 	            	res.send('0');
 	            } 

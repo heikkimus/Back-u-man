@@ -1,5 +1,9 @@
 // Setup mongoose and the database
 // Check out ./config-sample to configure your MongoDb, rename it to config.js
+var app = require('express');  
+var server = app();
+server.set('url', 'http://127.0.0.1:8080');
+
 var mongoose = require('mongoose/');
 passport = require('passport');
 LocalStrategy = require('passport-local').Strategy;
@@ -7,23 +11,21 @@ LocalStrategy = require('passport-local').Strategy;
 var config = require('./config'); // Local congig file to hide creds
 db = mongoose.connect(config.creds.mongodb);
 //var UserSchema = require('./schema'); 
-
-// require restify and bodyParser to read Backbone.js syncs
-var app = require('express');  
 crypto = require('crypto');
-var server = app();
-server.set('url', 'http://127.0.0.1:8080');
-//server.use(restify.bodyParser());
 
 server.use('/public', app.static(__dirname + '/static'));
 server.use('/css', app.static(__dirname + '/static/css/'));
+
 server.use(app.cookieParser());
+server.use(app.methodOverride());
 server.use(app.session({ secret: 'keyboard cat' }));
+server.use(app.bodyParser());
 server.use(passport.initialize());
 server.use(passport.session());
+
 server.use(server.router);
 
-server.use(app.bodyParser());
+
 
 
 var UserSchema = new mongoose.Schema({
@@ -40,17 +42,17 @@ var userApi = require('./user')
 /*Authentication*/
 
 function findByUsername(username, fn) {
+	console.log("finding user by: "+username)
 	User.findOne({ 'name': username }, 'name psw', function (err, user) {
 		  if (err){ 
 		  	return fn(null, null); }
 		  else    { 
-		  	
-		  	return fn(null, user); }
+		  	return fn(null, user); 
+		  }
 	});
 }
 
 passport.serializeUser(function(user, done) {
-
   done(null, user.id);
 });
 
@@ -71,16 +73,16 @@ passport.use(new LocalStrategy(
       // authenticated `user`.
      
       findByUsername(username, function(err, user) {
-        if (err) { return done(err); }
-        if (!user) { return done(null, false, { message: 'Unknown user ' + username }); }
-        
-        //var hash = crypto.createHash('sha1').update(password).digest("hex");
-        
-        if (user.psw != password) { 
-        	console.log("invalid password")
-        	return done(null, false, { message: 'Invalid password' }); 
-        }
-        return done(null, user);
+	        if (err) { return done(err); }
+	        if (!user) { return done(null, false, { message: 'Unknown user ' + username }); }
+	        
+	        var hash = crypto.createHash('sha1').update(password).digest("hex");
+	        
+	        if (user.psw != hash) { 
+	        	console.log("invalid password")
+	        	return done(null, false, { message: 'Invalid password' }); 
+	        }
+	        return done(null, user);
       })
     });
   }
@@ -102,8 +104,8 @@ function initdb(req, res, next){
   console.log("dropping existing data...\n")
  
   user.name  = "tv";
- // var hash = crypto.createHash('sha1').update("tv").digest("hex");
-  user.psw   = "tv";
+  var hash = crypto.createHash('sha1').update("tv").digest("hex");
+  user.psw   = hash;
   user.email = "tapio.vihanta@gmail.com"
   user.save(function(err){
   	console.log(err)
